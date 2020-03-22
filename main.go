@@ -24,13 +24,12 @@ const (
 const appId = "com.github.gotk3.gotk3-examples.glade"
 
 type OutFile struct {
-	Name string
-	Iter *gtk.TreeIter
+	Name   string
+	Iter   *gtk.TreeIter
+	IsDone bool
 }
 
 var files = make([]OutFile, 0)
-
-//var headerTitle = make(chan string)
 
 var win *gtk.ApplicationWindow
 var treeStore *gtk.ListStore
@@ -227,7 +226,7 @@ func main() {
 					return
 				}
 				iter := addRow(treeStore, base, ByteCountBinary(stat.Size()))
-				files = append(files, OutFile{Name: name, Iter: iter})
+				files = append(files, OutFile{Name: name, Iter: iter, IsDone: false})
 			}
 		})
 		failOnError(err)
@@ -500,6 +499,9 @@ func SendFiles() {
 	var err error
 	if len(files) > 0 {
 		for _, outFile := range files {
+			if outFile.IsDone {
+				continue
+			}
 			err = SendFile(outFile.Name, func(p int) {
 				err := treeStore.SetValue(outFile.Iter, ColumnProgress, p)
 				if err != nil {
@@ -509,6 +511,7 @@ func SendFiles() {
 			if err != nil {
 				break
 			}
+			outFile.IsDone = true
 		}
 	}
 	if err == nil {
