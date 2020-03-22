@@ -13,3 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+config.yml
+ui/sfn-popover.ui~
+ui/sfn-settings.ui~
