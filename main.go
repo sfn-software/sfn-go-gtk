@@ -4,15 +4,14 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/gotk3/gotk3/glib"
+	"github.com/gotk3/gotk3/gtk"
 	"gopkg.in/yaml.v3"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/gotk3/gotk3/glib"
-	"github.com/gotk3/gotk3/gtk"
 )
 
 const (
@@ -148,7 +147,7 @@ func main() {
 			failOnError(err)
 			portEntry, err := isEntry(obj)
 			failOnError(err)
-			portEntry.SetText(string(config.Client.Port))
+			portEntry.SetText(config.Client.Port)
 
 			obj, err = builder.GetObject("connect_button")
 			failOnError(err)
@@ -215,18 +214,25 @@ func main() {
 			)
 			failOnError(err)
 			dialog.SetModal(true)
+			dialog.SetSelectMultiple(true)
 			v := dialog.Run()
 			if v == int(gtk.RESPONSE_ACCEPT) {
-				name := dialog.GetFilename()
-				log.Println("open:", name)
-				base := filepath.Base(name)
-				stat, err := os.Stat(name)
+				list, err := dialog.GetFilenames()
 				if err != nil {
-					log.Println("unable to get file info")
+					log.Println("unable to choose files")
 					return
 				}
-				iter := addRow(treeStore, base, ByteCountBinary(stat.Size()))
-				files = append(files, OutFile{Name: name, Iter: iter, IsDone: false})
+				for _, name := range list {
+					log.Println("open:", name)
+					base := filepath.Base(name)
+					stat, err := os.Stat(name)
+					if err != nil {
+						log.Println("unable to get file info")
+						return
+					}
+					iter := addRow(treeStore, base, ByteCountBinary(stat.Size()))
+					files = append(files, OutFile{Name: name, Iter: iter, IsDone: false})
+				}
 			}
 		})
 		failOnError(err)
@@ -419,7 +425,7 @@ func StartServer() bool {
 	SwitchConnectionButton(true)
 	ReceiveFiles()
 	SendFiles()
-	Disconnect()
+	_ = Disconnect()
 	StopServer()
 	SwitchConnectionButton(false)
 	return true
@@ -449,7 +455,7 @@ func RunClient(host string, port string) error {
 		SetSubtitle(ip)
 		SendFiles()
 		ReceiveFiles()
-		Disconnect()
+		_ = Disconnect()
 	}
 	SwitchConnectionButton(false)
 	StartServerAsync()
@@ -662,7 +668,7 @@ func showError(format string, a ...interface{}) {
 	})
 }
 
-// onMainWindowDestory is the callback that is linked to the
+// onMainWindowDestroy is the callback that is linked to the
 // on_main_window_destroy handler. It is not required to map this,
 // and is here to simply demo how to hook-up custom callbacks.
 func onMainWindowDestroy() {
