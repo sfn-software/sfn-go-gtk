@@ -59,13 +59,12 @@ func main() {
 	failOnError(err)
 
 	// Connect function to application startup event, this is not required.
-	_, err = application.Connect("startup", func() {
+	_ = application.Connect("startup", func() {
 		log.Println("application startup")
 	})
-	failOnError(err)
 
 	// Connect function to application activate event
-	_, err = application.Connect("activate", func() {
+	_ = application.Connect("activate", func() {
 		log.Println("application activate")
 
 		// Get the GtkBuilder UI definition in the glade file.
@@ -128,7 +127,7 @@ func main() {
 		}
 		tree.SetModel(treeStore)
 
-		_, err = buttonConnect.Connect("clicked", func() {
+		_ = buttonConnect.Connect("clicked", func() {
 			builder, err := gtk.BuilderNewFromFile("ui/sfn-popover.ui")
 			failOnError(err)
 
@@ -153,7 +152,7 @@ func main() {
 			failOnError(err)
 			button, err := isButton(obj)
 			failOnError(err)
-			_, err = button.Connect("clicked", func() {
+			_ = button.Connect("clicked", func() {
 				host, err := hostEntry.GetText()
 				failOnError(err)
 				port, err := portEntry.GetText()
@@ -181,19 +180,16 @@ func main() {
 				button.SetSensitive(len(h) > 0 && len(p) > 0)
 			}
 			validateFunc()
-			_, err = hostEntry.Connect("changed", validateFunc)
-			failOnError(err)
-			_, err = portEntry.Connect("changed", validateFunc)
-			failOnError(err)
+			_ = hostEntry.Connect("changed", validateFunc)
+			_ = portEntry.Connect("changed", validateFunc)
 
 			popover.SetRelativeTo(buttonConnect)
 
 			popover.Show()
 
 		})
-		failOnError(err)
 
-		_, err = buttonCancel.Connect("clicked", func() {
+		_ = buttonCancel.Connect("clicked", func() {
 			err := Disconnect()
 			if err != nil {
 				showError("Unable to disconnect")
@@ -204,7 +200,7 @@ func main() {
 			StartServerAsync()
 		})
 
-		_, err = buttonImport.Connect("clicked", func() {
+		_ = buttonImport.Connect("clicked", func() {
 			dialog, err := gtk.FileChooserNativeDialogNew(
 				"Choose the file to send",
 				win,
@@ -235,9 +231,8 @@ func main() {
 				}
 			}
 		})
-		failOnError(err)
 
-		_, err = buttonSettings.Connect("clicked", func() {
+		_ = buttonSettings.Connect("clicked", func() {
 			builder, err := gtk.BuilderNewFromFile("ui/sfn-settings.ui")
 			failOnError(err)
 
@@ -270,7 +265,7 @@ func main() {
 			selectDirButton, err := isButton(obj)
 			failOnError(err)
 
-			_, err = selectDirButton.Connect("clicked", func() {
+			_ = selectDirButton.Connect("clicked", func() {
 				dialog, err := gtk.FileChooserNativeDialogNew("Select incoming files directory", win, gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER, "Select", "Cancel")
 				failOnError(err)
 				dialog.SetModal(true)
@@ -284,7 +279,7 @@ func main() {
 				}
 			})
 
-			_, err = hostSwitch.Connect("state-set", func() {
+			_ = hostSwitch.Connect("state-set", func() {
 				active := hostSwitch.GetActive()
 				portEntry.SetSensitive(active)
 				if !active {
@@ -295,7 +290,7 @@ func main() {
 				}
 			})
 
-			_, err = popover.Connect("closed", func() {
+			_ = popover.Connect("closed", func() {
 				log.Println("settings closed")
 				l := hostSwitch.GetActive()
 				p, err := portEntry.GetText()
@@ -331,13 +326,11 @@ func main() {
 
 		StartServerAsync()
 	})
-	failOnError(err)
 
 	// Connect function to application shutdown event, this is not required.
-	_, err = application.Connect("shutdown", func() {
+	_ = application.Connect("shutdown", func() {
 		log.Println("application shutdown")
 	})
-	failOnError(err)
 
 	// Launch the application
 	os.Exit(application.Run(os.Args))
@@ -529,13 +522,13 @@ func SendFiles() {
 }
 
 func SwitchConnectionButton(connected bool) {
-	_, _ = glib.IdleAdd(buttonCancel.SetVisible, connected)
-	_, _ = glib.IdleAdd(buttonConnect.SetVisible, !connected)
-	_, _ = glib.IdleAdd(buttonSettings.SetVisible, !connected)
+	glib.IdleAdd(func() { buttonCancel.SetVisible(connected) })
+	glib.IdleAdd(func() { buttonConnect.SetVisible(!connected) })
+	glib.IdleAdd(func() { buttonSettings.SetVisible(!connected) })
 }
 
 func SetSubtitle(subtitle string) {
-	_, _ = glib.IdleAdd(headerBar.SetSubtitle, subtitle)
+	glib.IdleAdd(func() { headerBar.SetSubtitle(subtitle) })
 }
 
 func isApplicationWindow(obj glib.IObject) (*gtk.ApplicationWindow, error) {
@@ -658,12 +651,11 @@ func failOnError(e error) {
 }
 
 func showError(format string, a ...interface{}) {
-	_, _ = glib.IdleAdd(func() {
+	glib.IdleAdd(func() {
 		dialog := gtk.MessageDialogNew(win, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, format, a...)
-		_, err := dialog.Connect("response", func() {
+		_ = dialog.Connect("response", func() {
 			dialog.Hide()
 		})
-		failOnError(err)
 		dialog.Show()
 	})
 }
