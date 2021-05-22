@@ -1,7 +1,7 @@
 Siphon
 ======
 
-Utility to send files via direct connection, written in Go and GTK-3.
+Utility to send/receive files via direct connection, written in Go and GTK-3.
 
 ![image](https://raw.github.com/solkin/siphon-gtk/master/art/main.png)
 
