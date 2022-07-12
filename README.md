@@ -9,7 +9,12 @@ Utility to send/receive files via direct connection, written in Go and GTK-3.
 Build instructions
 ------------------
 
-Assuming you have Go 1.11+ installed, type:
+Requirements:
+
+* Go 1.11+
+* GTK3 headers (Debian package is called `libgtk-3-dev`)
+
+Assuming you have all that, type:
 
 ```
 go build
